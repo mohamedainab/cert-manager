@@ -66,7 +66,8 @@ func TestMetricsController(t *testing.T) {
 
 	metricsHandler := metrics.New(logf.Log, fixedClock)
 
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	lc := net.ListenConfig{}
+	ln, err := lc.Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +181,7 @@ func TestMetricsController(t *testing.T) {
 
 	// Create Certificate
 	crt := gen.Certificate(crtName,
-		gen.SetCertificateIssuer(cmmeta.ObjectReference{Kind: "Issuer", Name: "test-issuer", Group: "test-issuer-group"}),
+		gen.SetCertificateIssuer(cmmeta.IssuerReference{Kind: "Issuer", Name: "test-issuer", Group: "test-issuer-group"}),
 		gen.SetCertificateSecretName(crtName),
 		gen.SetCertificateCommonName(crtName),
 		gen.SetCertificateNamespace(namespace),

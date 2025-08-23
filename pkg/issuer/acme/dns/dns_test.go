@@ -32,6 +32,7 @@ import (
 	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/acmedns"
 	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/cloudflare"
 	"github.com/cert-manager/cert-manager/pkg/issuer/acme/dns/util"
+	"github.com/cert-manager/cert-manager/test/unit/gen"
 )
 
 const (
@@ -88,7 +89,7 @@ func TestClusterIssuerNamespace(t *testing.T) {
 						},
 					},
 				},
-				IssuerRef: cmmeta.ObjectReference{
+				IssuerRef: cmmeta.IssuerReference{
 					Name: "test-issuer",
 					Kind: "ClusterIssuer", // ClusterIssuer reference, so should use the clusterResourceNamespace
 				},
@@ -142,7 +143,7 @@ func TestSolverFor(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -178,7 +179,7 @@ func TestSolverFor(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -208,7 +209,7 @@ func TestSolverFor(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -244,7 +245,7 @@ func TestSolverFor(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -280,7 +281,7 @@ func TestSolverFor(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -316,7 +317,7 @@ func TestSolverFor(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -352,7 +353,7 @@ func TestSolverFor(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -410,7 +411,7 @@ func TestSolveForDigitalOcean(t *testing.T) {
 						},
 					},
 				},
-				IssuerRef: cmmeta.ObjectReference{
+				IssuerRef: cmmeta.IssuerReference{
 					Name: "test-issuer",
 				},
 			},
@@ -468,7 +469,7 @@ func TestRoute53TrimCreds(t *testing.T) {
 						},
 					},
 				},
-				IssuerRef: cmmeta.ObjectReference{
+				IssuerRef: cmmeta.IssuerReference{
 					Name: "test-issuer",
 				},
 			},
@@ -531,7 +532,7 @@ func TestRoute53SecretAccessKey(t *testing.T) {
 						},
 					},
 				},
-				IssuerRef: cmmeta.ObjectReference{
+				IssuerRef: cmmeta.IssuerReference{
 					Name: "test-issuer",
 				},
 			},
@@ -583,23 +584,14 @@ func TestRoute53AmbientCreds(t *testing.T) {
 					},
 				},
 				dnsProviders: newFakeDNSProviders(),
-				Challenge: &cmacme.Challenge{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: fakeIssuerNamespace,
-					},
-					Spec: cmacme.ChallengeSpec{
-						Solver: cmacme.ACMEChallengeSolver{
-							DNS01: &cmacme.ACMEChallengeSolverDNS01{
-								Route53: &cmacme.ACMEIssuerDNS01ProviderRoute53{
-									Region: "us-west-2",
-								},
-							},
-						},
-						IssuerRef: cmmeta.ObjectReference{
-							Name: "test-issuer",
-						},
-					},
-				},
+				Challenge: gen.Challenge("",
+					gen.SetChallengeNamespace(fakeIssuerNamespace),
+					gen.SetChallengeIssuer(cmmeta.IssuerReference{Name: "test-issuer"}),
+					gen.SetChallengeSolverDNS01(cmacme.ACMEChallengeSolverDNS01{
+						Route53: &cmacme.ACMEIssuerDNS01ProviderRoute53{
+							Region: "us-west-2",
+						}}),
+				),
 			},
 			result{
 				expectedCall: &fakeDNSProviderCall{
@@ -633,7 +625,7 @@ func TestRoute53AmbientCreds(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
@@ -689,24 +681,15 @@ func TestRoute53AssumeRole(t *testing.T) {
 					},
 				},
 				dnsProviders: newFakeDNSProviders(),
-				Challenge: &cmacme.Challenge{
-					ObjectMeta: metav1.ObjectMeta{
-						Namespace: fakeIssuerNamespace,
-					},
-					Spec: cmacme.ChallengeSpec{
-						Solver: cmacme.ACMEChallengeSolver{
-							DNS01: &cmacme.ACMEChallengeSolverDNS01{
-								Route53: &cmacme.ACMEIssuerDNS01ProviderRoute53{
-									Region: "us-west-2",
-									Role:   "my-role",
-								},
-							},
-						},
-						IssuerRef: cmmeta.ObjectReference{
-							Name: "test-issuer",
-						},
-					},
-				},
+				Challenge: gen.Challenge("",
+					gen.SetChallengeNamespace(fakeIssuerNamespace),
+					gen.SetChallengeIssuer(cmmeta.IssuerReference{Name: "test-issuer"}),
+					gen.SetChallengeSolverDNS01(cmacme.ACMEChallengeSolverDNS01{
+						Route53: &cmacme.ACMEIssuerDNS01ProviderRoute53{
+							Region: "us-west-2",
+							Role:   "my-role",
+						}}),
+				),
 			},
 			result{
 				expectedCall: &fakeDNSProviderCall{
@@ -741,7 +724,7 @@ func TestRoute53AssumeRole(t *testing.T) {
 								},
 							},
 						},
-						IssuerRef: cmmeta.ObjectReference{
+						IssuerRef: cmmeta.IssuerReference{
 							Name: "test-issuer",
 						},
 					},
